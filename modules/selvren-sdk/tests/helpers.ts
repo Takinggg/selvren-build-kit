@@ -6,6 +6,9 @@ export const THREAD = `pth_${"c".repeat(32)}`;
 export const AGENT = `agt_${"d".repeat(32)}`;
 export const AGENT_OTHER = `agt_${"e".repeat(32)}`;
 export const AGENT_REVISION = `agr_${"f".repeat(32)}`;
+export const RELEASE = `prl_${"a".repeat(32)}`;
+export const PUBLIC_TOKEN = `pss_${"A".repeat(43)}`;
+export const PUBLIC_EXPIRES = "2099-12-31T00:00:00.000Z";
 export const TOKEN = `selvren_int_${"A".repeat(32)}`;
 // Unsigned synthetic transport fixture; never accepted as a real Clerk session.
 export const SESSION_JWT = [
@@ -72,10 +75,29 @@ export const AGENT_ANSWER = {
   agent_revision_number: 3,
 };
 
-export function jsonResponse(payload: unknown, status = 200): Response {
+export const PUBLIC_SESSION = {
+  session_token: PUBLIC_TOKEN,
+  expires_at: PUBLIC_EXPIRES,
+  turns_remaining: 5,
+};
+
+export const PUBLIC_ANSWER = {
+  request_id: "pub-1",
+  answer: "Deux boulons.",
+  mode: "generated",
+  outcome: "answered",
+  sources: [{ index: 1, label: "note.txt", excerpt: "Deux boulons.", location: "p.1" }],
+  turns_remaining: 4,
+};
+
+export function jsonResponse(
+  payload: unknown,
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...extraHeaders },
   });
 }
 

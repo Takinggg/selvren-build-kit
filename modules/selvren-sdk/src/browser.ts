@@ -1,8 +1,8 @@
 /**
- * Browser-safe entry: types, AgentTransport, session transport, typed errors, safe hrefs.
- * Does not import the service client, service transport, or Node. Session HTTP uses
- * http-core, not parseToken. Service tokens are rejected.
- * Identity is verified upstream from the Clerk session access token.
+ * Browser-safe entry: types, AgentTransport, session and public transports,
+ * typed errors, safe hrefs. Does not import the service client, service
+ * transport, or Node. HTTP uses http-core, not parseToken. Service tokens
+ * are rejected. Public visitors mint an opaque session; Clerk is not required.
  */
 export type { SelvrenRetryGuidance } from "./errors.js";
 export {
@@ -20,4 +20,11 @@ export type {
   SessionAgentTransportOptions,
 } from "./session-agent-transport.js";
 export { createSessionAgentTransport } from "./session-agent-transport.js";
+export type {
+  PublicAgentSessionState,
+  PublicAgentSessionStatus,
+  PublicAgentTransport,
+  PublicAgentTransportOptions,
+} from "./public-agent-transport.js";
+export { createPublicAgentTransport } from "./public-agent-transport.js";
 export { safeHref } from "./safe-href.js";

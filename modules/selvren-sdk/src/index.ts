@@ -45,4 +45,11 @@ export type {
   SessionAgentTransportOptions,
 } from "./session-agent-transport.js";
 export { createSessionAgentTransport } from "./session-agent-transport.js";
+export type {
+  PublicAgentSessionState,
+  PublicAgentSessionStatus,
+  PublicAgentTransport,
+  PublicAgentTransportOptions,
+} from "./public-agent-transport.js";
+export { createPublicAgentTransport } from "./public-agent-transport.js";
 export { safeHref } from "./safe-href.js";

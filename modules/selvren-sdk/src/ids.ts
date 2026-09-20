@@ -4,6 +4,8 @@ export const SPACE_ID = /^corp_[0-9a-f]{32}$/u;
 export const THREAD_ID = /^pth_[a-f0-9]{32}$/u;
 export const AGENT_ID = /^agt_[a-f0-9]{32}$/u;
 export const AGENT_REVISION_ID = /^agr_[a-f0-9]{32}$/u;
+export const PUBLIC_RELEASE_ID = /^prl_[0-9a-f]{32}$/u;
+export const PUBLIC_SESSION_TOKEN = /^pss_[A-Za-z0-9_-]{43}$/u;
 export const DOCUMENT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 export const RFC_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 export const EXPERT_ID = /^[a-z0-9][a-z0-9._:-]{0,127}$/u;
@@ -62,6 +64,13 @@ export function parseThreadId(value: string): string {
 export function parseAgentId(value: string): string {
   if (typeof value !== "string" || !AGENT_ID.test(value)) {
     throw invalidRequest("agent id must match agt_ plus 32 lowercase hex characters.");
+  }
+  return value;
+}
+
+export function parsePublicReleaseId(value: string): string {
+  if (typeof value !== "string" || !PUBLIC_RELEASE_ID.test(value)) {
+    throw invalidRequest("releaseId must match prl_ plus 32 lowercase hex characters.");
   }
   return value;
 }

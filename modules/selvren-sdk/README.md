@@ -13,7 +13,7 @@ Aucune dépendance d’exécution externe. Le client utilise `fetch` (fourni ou 
 | Import | Contenu | Où l’utiliser |
 | --- | --- | --- |
 | `@selvren/sdk` | `SelvrenIntegrationClient` + types | Processus **serveur** uniquement |
-| `@selvren/sdk/browser` | `createSessionAgentTransport`, `AgentTransport`, erreurs typées, `safeHref` | UI / bundler de **première partie**. **Aucun `selvren_int_*`, aucun client secret.** Le graphe d’entrée n’importe pas le client de service ni `parseToken` ; le HTTP partagé est dans `http-core`. |
+| `@selvren/sdk/browser` | `createSessionAgentTransport`, `createPublicAgentTransport`, `AgentTransport`, erreurs typées, `safeHref` | UI / bundler de **première partie**. **Aucun `selvren_int_*`, aucun client secret.** Le graphe d’entrée n’importe pas le client de service ni `parseToken` ; le HTTP partagé est dans `http-core`. |
 
 Construire `SelvrenIntegrationClient` dans un document navigateur lève `BROWSER_FORBIDDEN`. Ne jamais placer `selvren_int_*` ni `selvren_private_*` dans `VITE_*`, `NEXT_PUBLIC_*` ou un bundle public. Un `end_user_ref` fourni par le navigateur n’est pas une authentification.
 
@@ -70,6 +70,41 @@ const transport = createSessionAgentTransport({
 ```
 
 Ce n’est **pas** un accès public anonyme. L’API vérifie l’identité de session. Le client ne fabrique pas d’`end_user_ref` et n’accepte pas une chaîne utilisateur comme preuve. Utilisez **la même instance Clerk** que l’API Selvren. L’agent doit être publié ; les droits (licence, grants) sont accordés **côté serveur**. Ce paquet n’émet pas de licence.
+
+## Transport public (navigateur, visiteurs)
+
+Les routes publiques (`POST /v1/public/agents/:releaseId/sessions` et `/query`) sont **éteintes par défaut**. Elles n’existent que si les public releases sont activées côté API **et** qu’une release `prl_` a été **explicitement approuvée** dans le studio. Le backend reste en qualification : ce transport ne prouve pas un service servi. Ce paquet n’est **pas publié sur npm**.
+
+Les visiteurs n’ont **pas de compte**. Le navigateur pose `Origin` tout seul ; le SDK ne le forge pas. Le secret de session (`pss_`) n’est pas écrit dans `localStorage`, un cookie, l’URL, un journal ou un message d’erreur. Il est transmis uniquement comme `Authorization: Bearer` au `fetch` (global ou fourni par l’hôte) ; un `fetch` personnalisé est de confiance et reçoit cet en-tête. `credentials: "omit"`. Pas de jeton de service, pas d’en-tête tenant, pas de documents/espaces/instructions choisis par le visiteur.
+
+Les plafonds (TTL de session, tours, débits) sont des **limites techniques de déploiement**, pas une offre d’abonnement.
+
+```ts
+import { AgentChat } from "@selvren/react";
+import { createPublicAgentTransport } from "@selvren/sdk/browser";
+import "@selvren/react/styles.css";
+
+const releaseId = "prl_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; // release publique publiée et approuvée
+let conversationGeneration = 0; // Dans React, portez cette valeur dans un état qui déclenche un rendu.
+const transport = createPublicAgentTransport({
+  baseUrl: "https://api.example.test",
+  releaseId,
+  language: "fr",
+});
+
+<AgentChat conversationKey={`public:${releaseId}:${conversationGeneration}`} transport={transport} />
+```
+
+La session est créée au **premier** `query`. Pour reprendre la même requête après une erreur de transport, un timeout, un abort ou `PUBLIC_AGENT_BUSY`, conservez la même session et le même UUID. `PUBLIC_AGENT_CONFLICT` exige une **nouvelle question** et un nouvel UUID (pas de relance automatique). `PUBLIC_AGENT_DENIED` / `PUBLIC_AGENT_UNAVAILABLE`, session expirée ou quota de tours épuisé sont **terminaux** : le SDK ne recrée pas une session tout seul (un même UUID dans une nouvelle session pourrait débiter deux fois). `PUBLIC_AGENT_UNAVAILABLE` couvre aussi un tour **terminé en échec** : dans ce SDK, cela **termine la conversation**. `turnsRemaining` est la dernière valeur **acquittée avec succès** ; un tour démarré puis échoué peut en consommer davantage, les plafonds du serveur font foi. Pour une nouvelle conversation, appeler `startNewConversation()` seulement hors vol, **émettre un nouvel UUID**, puis changer `conversationKey` :
+
+```ts
+if (transport.sessionState().canStartNewConversation) {
+  transport.startNewConversation();
+  conversationGeneration += 1;
+}
+```
+
+`sessionState()` expose le statut, `turnsRemaining` et `expiresAt` **sans** le secret. `AgentTransport.query` reste inchangé.
 
 ## AgentTransport (contrat UI)
 
