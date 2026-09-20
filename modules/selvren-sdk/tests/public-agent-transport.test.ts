@@ -12,6 +12,7 @@ import {
   jsonBody,
   jsonResponse,
   MESSAGE,
+  CLIENT,
   ORIGIN,
   PUBLIC_ANSWER,
   PUBLIC_SESSION,
@@ -78,6 +79,14 @@ function hangUntilAbort(_input: string, init: RequestInit): Promise<Response> {
 async function flushMicrotasks(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
+}
+
+function promiseWithNotify(): { promise: Promise<void>; notify: () => void } {
+  let notify = (): void => undefined;
+  const promise = new Promise<void>((resolve) => {
+    notify = resolve;
+  });
+  return { promise, notify };
 }
 
 afterEach(() => {
@@ -439,6 +448,59 @@ describe("createPublicAgentTransport", () => {
     expect(fetch.mock.calls.filter((call) => call[0].endsWith("/sessions"))).toHaveLength(2);
   });
 
+  it("keeps remaining turns at the newer count when a stale replay arrives later", async () => {
+    const deferred: Array<(value: Response) => void> = [];
+    const started = [promiseWithNotify(), promiseWithNotify()];
+    const fetch = publicFetch(jsonResponse(PUBLIC_SESSION, 201), () => {
+      const index = deferred.length;
+      const pending = new Promise<Response>((resolve) => {
+        deferred[index] = resolve;
+      });
+      started[index]?.notify();
+      return pending;
+    });
+    const transport = transportOf(fetch);
+    const olderQuery = transport.query({ question: "older", clientRequestId: REQUEST });
+    const newerQuery = transport.query({ question: "newer", clientRequestId: MESSAGE });
+    await Promise.all(started.map((item) => item.promise));
+    expect(transport.sessionState()).toMatchObject({ status: "querying", turnsRemaining: 5 });
+    deferred[1]?.(jsonResponse({ ...PUBLIC_ANSWER, request_id: "newer", turns_remaining: 2 }));
+    await expect(newerQuery).resolves.toMatchObject({ requestId: "newer" });
+    expect(transport.sessionState().turnsRemaining).toBe(2);
+    deferred[0]?.(jsonResponse({ ...PUBLIC_ANSWER, request_id: "older", turns_remaining: 4 }));
+    await expect(olderQuery).resolves.toMatchObject({ requestId: "older" });
+    expect(transport.sessionState()).toMatchObject({ status: "ready", turnsRemaining: 2 });
+    expect(fetch.mock.calls.filter((call) => call[0].endsWith("/sessions"))).toHaveLength(1);
+  });
+
+  it("keeps remaining turns at zero and exhausted when a stale replay follows exhaustion", async () => {
+    const deferred: Array<(value: Response) => void> = [];
+    const started = [promiseWithNotify(), promiseWithNotify()];
+    const fetch = publicFetch(jsonResponse(PUBLIC_SESSION, 201), () => {
+      const index = deferred.length;
+      const pending = new Promise<Response>((resolve) => {
+        deferred[index] = resolve;
+      });
+      started[index]?.notify();
+      return pending;
+    });
+    const transport = transportOf(fetch);
+    const first = transport.query({ question: "A", clientRequestId: REQUEST });
+    const second = transport.query({ question: "B", clientRequestId: MESSAGE });
+    await Promise.all(started.map((item) => item.promise));
+    deferred[0]?.(jsonResponse({ ...PUBLIC_ANSWER, request_id: "zero", turns_remaining: 0 }));
+    await expect(first).resolves.toMatchObject({ requestId: "zero" });
+    expect(transport.sessionState()).toMatchObject({ status: "exhausted", turnsRemaining: 0 });
+    deferred[1]?.(jsonResponse({ ...PUBLIC_ANSWER, request_id: "stale", turns_remaining: 4 }));
+    await expect(second).resolves.toMatchObject({ requestId: "stale" });
+    expect(transport.sessionState()).toMatchObject({ status: "exhausted", turnsRemaining: 0 });
+    await expect(transport.query({ question: "C", clientRequestId: CLIENT })).rejects.toMatchObject({
+      code: "PUBLIC_AGENT_UNAVAILABLE",
+    });
+    expect(fetch.mock.calls.filter((call) => call[0].endsWith("/sessions"))).toHaveLength(1);
+    expect(transport.sessionState().status).toBe("exhausted");
+  });
+
   it("rejects startNewConversation while a query is in flight", async () => {
     let resolveQuery: (value: Response) => void = () => undefined;
     let notifyQuery: () => void = () => undefined;
@@ -571,6 +633,30 @@ describe("createPublicAgentTransport", () => {
     const fetch = publicFetch(
       jsonResponse(PUBLIC_SESSION, 201),
       jsonResponse({ ...PUBLIC_ANSWER, sources: [{ index: 1, label: "", excerpt: "x" }] }),
+    );
+    await expect(transportOf(fetch).query({ question: "Q", clientRequestId: REQUEST })).rejects.toMatchObject({
+      code: "MALFORMED_RESPONSE",
+    });
+  });
+
+  it("accepts a 200-codepoint non-BMP label and an empty excerpt", async () => {
+    const label = "😀".repeat(200);
+    const fetch = publicFetch(
+      jsonResponse(PUBLIC_SESSION, 201),
+      jsonResponse({
+        ...PUBLIC_ANSWER,
+        sources: [{ index: 1, label, excerpt: "", location: "" }],
+      }),
+    );
+    const answer = await transportOf(fetch).query({ question: "Q", clientRequestId: REQUEST });
+    expect(answer.citations).toEqual([{ id: "1", documentName: label, excerpt: "", location: null }]);
+  });
+
+  it("rejects a 201-codepoint non-BMP label", async () => {
+    const label = "😀".repeat(201);
+    const fetch = publicFetch(
+      jsonResponse(PUBLIC_SESSION, 201),
+      jsonResponse({ ...PUBLIC_ANSWER, sources: [{ index: 1, label, excerpt: "x" }] }),
     );
     await expect(transportOf(fetch).query({ question: "Q", clientRequestId: REQUEST })).rejects.toMatchObject({
       code: "MALFORMED_RESPONSE",

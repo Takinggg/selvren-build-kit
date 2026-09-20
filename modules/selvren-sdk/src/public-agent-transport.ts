@@ -42,9 +42,9 @@ import {
 const OPTION_KEYS = new Set(["baseUrl", "releaseId", "language", "fetch"]);
 const MAX_PUBLIC_SOURCES = 200;
 const MAX_TURNS_REMAINING = 20;
-const MAX_LABEL = 256;
-const MAX_EXCERPT = 16_384;
-const MAX_LOCATION = 512;
+const MAX_LABEL = 200;
+const MAX_EXCERPT = 2_000;
+const MAX_LOCATION = 200;
 /** Date vs expires_at beyond this window is treated as unknown, not as extra TTL. */
 const MAX_TRUSTED_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const RESET_IN_FLIGHT = "A new conversation cannot start while a public agent query is in flight.";
@@ -291,10 +291,12 @@ function isTrustedExpired(session: MintedSession): boolean {
 }
 
 function rememberTurns(runtime: PublicRuntime, turnsRemaining: number): void {
+  const current = runtime.session?.turnsRemaining;
+  const effective = current === undefined ? turnsRemaining : Math.min(current, turnsRemaining);
   if (runtime.session !== null) {
-    runtime.session = { ...runtime.session, turnsRemaining };
+    runtime.session = { ...runtime.session, turnsRemaining: effective };
   }
-  if (turnsRemaining === 0) runtime.terminal = "exhausted";
+  if (effective === 0 && runtime.terminal === null) runtime.terminal = "exhausted";
 }
 
 function finalizePublicError(runtime: PublicRuntime, error: unknown, composed: ComposedAbort): Error {
@@ -362,12 +364,8 @@ function parsePublicSources(value: unknown, requestId: string): AgentCitation[] 
       malformed(requestId);
     }
     seen.add(index);
-    const label = item.label;
-    const excerpt = item.excerpt;
-    if (typeof label !== "string" || label.length < 1 || label.length > MAX_LABEL) malformed(requestId);
-    if (typeof excerpt !== "string" || excerpt.length < 1 || excerpt.length > MAX_EXCERPT) {
-      malformed(requestId);
-    }
+    const label = parsePublicText(item.label, MAX_LABEL, false, requestId);
+    const excerpt = parsePublicText(item.excerpt, MAX_EXCERPT, true, requestId);
     citations.push({
       id: String(index),
       documentName: label,
@@ -380,8 +378,25 @@ function parsePublicSources(value: unknown, requestId: string): AgentCitation[] 
 
 function optionalLocation(value: unknown, requestId: string): string | null {
   if (value === undefined || value === null) return null;
-  if (typeof value !== "string" || value.length < 1 || value.length > MAX_LOCATION) malformed(requestId);
+  const location = parsePublicText(value, MAX_LOCATION, true, requestId);
+  return location === "" ? null : location;
+}
+
+function parsePublicText(
+  value: unknown,
+  maxCodePoints: number,
+  allowEmpty: boolean,
+  requestId: string,
+): string {
+  if (typeof value !== "string") malformed(requestId);
+  const length = codePointLength(value);
+  if (length > maxCodePoints || (!allowEmpty && length === 0)) malformed(requestId);
   return value;
+}
+
+function codePointLength(value: string): number {
+  // The wire contract counts Unicode code points, not grapheme clusters.
+  return Array.from(value).length;
 }
 
 function parseTurnsRemaining(value: unknown, requestId?: string): number {
