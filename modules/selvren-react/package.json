@@ -1,0 +1,37 @@
+{
+  "name": "@selvren/react",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Composants React accessibles pour un agent Selvren. Non publié.",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./css/styles.css"
+  },
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "css", "LICENSE"],
+  "sideEffects": ["**/*.css"],
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "happy-dom": "20.11.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "typescript": "5.8.3",
+    "vitest": "4.1.11"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "check": "tsc -p tsconfig.json && vitest run"
+  }
+}

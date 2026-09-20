@@ -1,0 +1,36 @@
+{
+  "name": "@selvren/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Client TypeScript serveur pour l'API d'intégration Selvren. Non publié.",
+  "engines": {
+    "node": ">=24.15 <25"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "LICENSE"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
+    "typecheck:browser": "tsc -p tsconfig.browser.json",
+    "test": "vitest run",
+    "check": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json && vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "typescript": "5.8.3",
+    "vitest": "4.1.11"
+  }
+}

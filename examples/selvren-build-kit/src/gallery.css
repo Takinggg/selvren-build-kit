@@ -1,0 +1,186 @@
+:root {
+  --kit-fg: #1c1c1c;
+  --kit-bg: #f4f4f2;
+  --kit-panel: #ffffff;
+  --kit-muted: #5c5c5c;
+  --kit-border: #d6d6d6;
+  --kit-accent: #1f6b4a;
+  --kit-space: 1rem;
+  --kit-font: system-ui, "Segoe UI", sans-serif;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  color: var(--kit-fg);
+  background: var(--kit-bg);
+  font-family: var(--kit-font);
+  line-height: 1.45;
+}
+
+.kit-page {
+  box-sizing: border-box;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+.kit-header h1,
+.kit-entry h2,
+.kit-docs h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.kit-header p,
+.kit-entry p,
+.kit-docs p,
+.kit-caption,
+.kit-status,
+.kit-live-note,
+.kit-demo-note {
+  margin: 0 0 0.75rem;
+}
+
+.kit-caption,
+.kit-muted {
+  color: var(--kit-muted);
+}
+
+.kit-nav,
+.kit-mode,
+.kit-code-toolbar,
+.kit-fieldset,
+.kit-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.kit-nav a {
+  color: var(--kit-accent);
+}
+
+.kit-nav a:focus-visible,
+.kit-button:focus-visible,
+.kit-choice input:focus-visible,
+.kit-mode button:focus-visible {
+  outline: 2px solid var(--kit-accent);
+  outline-offset: 2px;
+}
+
+.kit-button {
+  font: inherit;
+  color: var(--kit-fg);
+  background: var(--kit-panel);
+  border: 1px solid var(--kit-border);
+  border-radius: 0.35rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.kit-mode button[aria-pressed="true"] {
+  color: #ffffff;
+  background: var(--kit-accent);
+  border-color: var(--kit-accent);
+}
+
+.kit-entry,
+.kit-docs,
+.kit-code-panel {
+  background: var(--kit-panel);
+  border: 1px solid var(--kit-border);
+  border-radius: 0.5rem;
+  padding: var(--kit-space);
+  margin: 0 0 1rem;
+}
+
+.kit-entry {
+  display: grid;
+  gap: 1rem;
+}
+
+.kit-demo-note,
+.kit-live-note,
+.kit-status {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--kit-border);
+  background: #eef3ef;
+}
+
+.kit-status {
+  background: #f7f1e8;
+}
+
+.kit-fieldset {
+  border: 1px solid var(--kit-border);
+  border-radius: 0.35rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.kit-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.kit-code-panel {
+  min-width: 0;
+}
+
+.kit-code-toolbar {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kit-code {
+  margin: 0;
+  max-height: 16rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+}
+
+.kit-stack {
+  flex-direction: column;
+}
+
+.kit-page code {
+  font-size: 0.92em;
+}
+
+@media (min-width: 1365px) {
+  .kit-page {
+    padding: 2rem;
+  }
+
+  .kit-entry {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+@media (max-width: 390px) {
+  .kit-page {
+    padding: 0.75rem;
+  }
+
+  .kit-header h1 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-page,
+  .kit-page * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

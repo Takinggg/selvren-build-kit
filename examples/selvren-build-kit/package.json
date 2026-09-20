@@ -1,0 +1,38 @@
+{
+  "name": "selvren-build-kit",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Galerie développeur et exemple d'intégration Selvren. Non publié.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clerk/react": "6.12.8",
+    "@selvren/react": "workspace:*",
+    "@selvren/sdk": "workspace:*",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.2.0",
+    "typescript": "5.8.3",
+    "vite": "8.1.5"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "index.html",
+    "vite.config.ts",
+    "tsconfig.json",
+    "src",
+    "scripts",
+    ".env.example"
+  ]
+}
