@@ -155,6 +155,9 @@ export function isRetryableAgentError(error: unknown): boolean {
 
 function retryGuidanceFor(code: string, status: number): SelvrenRetryGuidance {
   if (code === "ENTERPRISE_MESSAGE_FAILED") return "new-idempotency";
+  if (code === "PUBLIC_AGENT_BUSY") return "replay-same-idempotency";
+  if (code === "PUBLIC_AGENT_CONFLICT") return "none";
+  if (code === "PUBLIC_AGENT_DENIED" || code === "PUBLIC_AGENT_UNAVAILABLE") return "none";
   if (code === CLIENT_CODES.STREAM_AMBIGUOUS || code === CLIENT_CODES.STREAM_TIMEOUT) {
     return "read-then-decide";
   }
@@ -169,6 +172,10 @@ function retryGuidanceFor(code: string, status: number): SelvrenRetryGuidance {
 }
 
 function httpMessage(status: number, code: string): string {
+  if (code === "PUBLIC_AGENT_DENIED") return STATIC.publicDenied;
+  if (code === "PUBLIC_AGENT_UNAVAILABLE") return STATIC.publicUnavailable;
+  if (code === "PUBLIC_AGENT_BUSY") return STATIC.publicBusy;
+  if (code === "PUBLIC_AGENT_CONFLICT") return STATIC.publicConflict;
   if (code === "ENTERPRISE_ACCESS_DENIED" || status === 401 || status === 403) return STATIC.denied;
   if (code === "ENTERPRISE_THREAD_NOT_FOUND" || status === 404) return STATIC.notFound;
   if (code === "ENTERPRISE_CONFLICT" || status === 409) return STATIC.conflict;
@@ -190,6 +197,10 @@ const STATIC = {
   denied: "Access was denied.",
   notFound: "The resource was not found.",
   conflict: "The resource changed. Read current revision before retrying.",
+  publicDenied: "This public agent request was denied.",
+  publicUnavailable: "This public agent is unavailable.",
+  publicBusy: "This public agent request is already in progress.",
+  publicConflict: "This public agent request conflicts with a previous question.",
   messageFailed: "This message id failed terminally. Use a new client_message_id for a new attempt.",
   invalid: "The request was rejected as invalid.",
   failed: "The request failed.",

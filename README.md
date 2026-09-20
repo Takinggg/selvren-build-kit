@@ -62,7 +62,7 @@ Le mode session **dépend d’un backend Selvren joignable** et d’une configur
 
 ## Accès public anonyme
 
-Le widget public anonyme est en cours de développement. Cette version fournit l’intégration serveur et le chat sous session authentifiée.
+Le SDK fournit aussi `createPublicAgentTransport`, compatible avec `AgentChat`, pour une diffusion approuvée explicitement dans le studio. Ce transport est en aperçu : le backend public reste en qualification et désactivé par défaut. Sa présence dans ce dépôt ne signifie pas que ce service est déjà activé. Voir les [conditions et exemples du transport public](modules/selvren-sdk/README.md#transport-public-navigateur-visiteurs). La galerie conserve ses modes démonstration et session authentifiée.
 
 ## Ce workspace
 
@@ -104,7 +104,7 @@ bun examples/selvren-build-kit/scripts/query-agent.ts
 ## Hors périmètre (dans cet export)
 
 - Publication npm
-- Accès anonyme / landing publique / widget public
+- Hébergement d’une landing publique et activation du backend anonyme
 - Streaming de tokens
 - Faux pourcentages d’import ou sources métier inventées
 
