@@ -73,7 +73,7 @@ Ce n’est **pas** un accès public anonyme. L’API vérifie l’identité de s
 
 ## Transport public (navigateur, visiteurs)
 
-Les routes publiques (`POST /v1/public/agents/:releaseId/sessions` et `/query`) sont **éteintes par défaut**. Elles n’existent que si les public releases sont activées côté API **et** qu’une release `prl_` a été **explicitement approuvée** dans le studio. Le backend reste en qualification : ce transport ne prouve pas un service servi. Ce paquet n’est **pas publié sur npm**.
+Les routes publiques (`POST /v1/public/agents/:releaseId/sessions` et `/query`) sont **éteintes par défaut** dans la configuration serveur. Elles requièrent l’activation côté API **et** une diffusion `prl_` **explicitement approuvée** dans le studio. Le service hébergé sur `https://api.selvren.com` est activé ; son parcours API/SDK a été exercé le 21 septembre 2026 avec réponse sourcée, rejeu sans nouvelle consommation et retrait effectif. Choisissez les documents et autorisez l’origine HTTPS exacte de votre site avant l’intégration. Ce paquet n’est **pas publié sur npm**.
 
 Les visiteurs n’ont **pas de compte**. Le navigateur pose `Origin` tout seul ; le SDK ne le forge pas. Le secret de session (`pss_`) n’est pas écrit dans `localStorage`, un cookie, l’URL, un journal ou un message d’erreur. Il est transmis uniquement comme `Authorization: Bearer` au `fetch` (global ou fourni par l’hôte) ; un `fetch` personnalisé est de confiance et reçoit cet en-tête. `credentials: "omit"`. Pas de jeton de service, pas d’en-tête tenant, pas de documents/espaces/instructions choisis par le visiteur.
 
