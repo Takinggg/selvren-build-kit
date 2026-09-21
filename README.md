@@ -62,7 +62,7 @@ Le mode session **dépend d’un backend Selvren joignable** et d’une configur
 
 ## Accès public anonyme
 
-Le SDK fournit aussi `createPublicAgentTransport`, compatible avec `AgentChat`, pour une diffusion approuvée explicitement dans le studio. Ce transport est en aperçu : le backend public reste en qualification et désactivé par défaut. Sa présence dans ce dépôt ne signifie pas que ce service est déjà activé. Voir les [conditions et exemples du transport public](modules/selvren-sdk/README.md#transport-public-navigateur-visiteurs). La galerie conserve ses modes démonstration et session authentifiée.
+Le SDK fournit aussi `createPublicAgentTransport`, compatible avec `AgentChat`, pour une diffusion approuvée explicitement dans le studio. Le service hébergé Selvren est activé et son parcours API/SDK a été exercé le 21 septembre 2026 : réponse sourcée, rejeu sans nouvelle consommation et retrait d’accès. Utilisez `https://api.selvren.com`, l’identifiant public `prl_` de votre diffusion et une origine HTTPS autorisée dans le studio. Voir les [conditions et exemples du transport public](modules/selvren-sdk/README.md#transport-public-navigateur-visiteurs). La galerie conserve ses modes démonstration et session authentifiée ; les paquets npm restent non publiés.
 
 ## Ce workspace
 
